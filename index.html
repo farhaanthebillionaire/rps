@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rock Paper Scissor - fixed</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 18px; max-width:700px; margin:auto; }
+    button { margin:6px; padding:8px 12px; }
+    .js-score, .js-moves, .js-result { margin-top:10px; font-weight:600; }
+    .small { font-weight:400; font-size:14px; color:#333; margin-top:6px; }
+  </style>
+</head>
+<body>
+  <h2>Rock Paper Scissor</h2>
+
+  <div>
+    <button onclick="playGame('rock')">Rock</button>
+    <button onclick="playGame('paper')">Paper</button>
+    <button onclick="playGame('scissor')">Scissor</button>
+  </div>
+
+  <div class="js-result"></div>
+  <div class="js-moves small"></div>
+  <div class="js-score"></div>
+
+  <div style="margin-top:12px;">
+    <button id="resetBtn">Reset Score</button>
+  </div>
+
+<script>
+  const scoreKey = "rps-score";
+  let score;
+  try {
+    score = JSON.parse(localStorage.getItem(scoreKey)) || { wins: 0, loses: 0, ties: 0 };
+  } catch (e) {
+    score = { wins: 0, loses: 0, ties: 0 };
+    localStorage.removeItem(scoreKey);
+  }
+  const resultElement = document.querySelector('.js-result');
+  const movesElement = document.querySelector('.js-moves');
+  const scoreElement = document.querySelector('.js-score');
+  const resetBtn = document.getElementById('resetBtn');
+
+  updateScoreDisplay();
+
+  resetBtn.addEventListener('click', resetScore);
+
+  function playGame(playerMove) {
+    const computerMove = pickComputerMove();
+    const result = gameResult(playerMove, computerMove);
+
+    if (result === 'You win!') {
+      score.wins++;
+    } else if (result === 'You lose!') {
+      score.loses++;
+    } else {
+      score.ties++;
+    }
+
+    localStorage.setItem(scoreKey, JSON.stringify(score));
+
+    resultElement.textContent = result;
+    movesElement.textContent = `You picked ${playerMove}. Computer picked ${computerMove}.`;
+    updateScoreDisplay();
+
+    alert(`You picked ${playerMove}. Computer picked ${computerMove}. ${result}
+Wins: ${score.wins}  Loses: ${score.loses}  Ties: ${score.ties}`);
+  }
+
+  function pickComputerMove() {
+    const random = Math.random();
+    if (random < 1/3) return 'rock';
+    else if (random < 2/3) return 'paper';
+    return 'scissor';
+  }
+
+  function gameResult(playerMove, computerMove) {
+    if (playerMove === computerMove) return 'Tie!';
+    if (
+      (playerMove === 'rock' && computerMove === 'scissor') ||
+      (playerMove === 'scissor' && computerMove === 'paper') ||
+      (playerMove === 'paper' && computerMove === 'rock')
+    ) {
+      return 'You win!';
+    }
+    return 'You lose!';
+  }
+
+  function updateScoreDisplay() {
+    // defensive: ensure properties exist
+    if (typeof score.wins === 'undefined') score.wins = 0;
+    if (typeof score.loses === 'undefined') score.loses = 0;
+    if (typeof score.ties === 'undefined') score.ties = 0;
+
+    scoreElement.textContent = `Wins: ${score.wins}  |  Loses: ${score.loses}  |  Ties: ${score.ties}`;
+    console.log("Rendering score -> wins:", score.wins, "loses:", score.loses, "ties:", score.ties);
+  }
+
+  function resetScore() {
+    score = { wins: 0, loses: 0, ties: 0 };
+    localStorage.removeItem(scoreKey);
+    resultElement.textContent = '';
+    movesElement.textContent = '';
+    updateScoreDisplay();
+  }
+</script>
+</body>
+</html>
